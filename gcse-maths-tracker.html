@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCSE Maths Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface2: #f5f5f7;
+    --border: rgba(0,0,0,0.08);
+    --text: #1d1d1f;
+    --text2: #6e6e73;
+    --text3: #aeaeb2;
+    --red: #ff5f57;
+    --amber: #febc2e;
+    --green: #28c840;
+    --red-bg: rgba(255,95,87,0.12);
+    --amber-bg: rgba(254,188,46,0.12);
+    --green-bg: rgba(40,200,64,0.12);
+    --shadow: 0 2px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 4px 30px rgba(0,0,0,0.12);
+  }
+
+  body {
+    font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  nav {
+    background: rgba(245,245,247,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    height: 52px;
+    gap: 4px;
+  }
+
+  .nav-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.12);
+  }
+
+  .nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-right: auto;
+    margin-left: 8px;
+  }
+
+  .page { display: none; padding: 32px 24px 60px; max-width: 720px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-header p { font-size: 14px; color: var(--text2); }
+
+  .progress-row { display: flex; gap: 8px; margin-bottom: 28px; align-items: center; }
+
+  .progress-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+  }
+  .progress-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .pill-red { background: var(--red-bg); color: #b33a34; }
+  .pill-red .dot { background: var(--red); }
+  .pill-amber { background: var(--amber-bg); color: #a07000; }
+  .pill-amber .dot { background: var(--amber); }
+  .pill-green { background: var(--green-bg); color: #1a8a2c; }
+  .pill-green .dot { background: var(--green); }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text3);
+    margin: 24px 0 10px; padding-left: 2px;
+  }
+
+  .topic-card {
+    background: var(--surface); border-radius: 12px;
+    border: 1px solid var(--border); display: flex;
+    align-items: center; padding: 14px 16px;
+    margin-bottom: 8px; gap: 14px;
+    transition: box-shadow 0.2s, transform 0.1s; cursor: default;
+  }
+  .topic-card:hover { box-shadow: var(--shadow-hover); }
+
+  .topic-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
+  .grade-badge { font-size: 11px; color: var(--text3); font-weight: 500; min-width: 40px; text-align: right; }
+
+  .lights { display: flex; gap: 6px; align-items: center; }
+
+  .light {
+    width: 18px; height: 18px; border-radius: 50%; border: none;
+    cursor: pointer; transition: transform 0.15s, opacity 0.15s;
+    opacity: 0.25; flex-shrink: 0;
+  }
+  .light:hover { transform: scale(1.2); opacity: 0.6; }
+  .light.red { background: var(--red); }
+  .light.amber { background: var(--amber); }
+  .light.green { background: var(--green); }
+  .light.active { opacity: 1; box-shadow: 0 0 0 2px white, 0 0 0 3.5px currentColor; }
+  .light.red.active { color: var(--red); }
+  .light.amber.active { color: var(--amber); }
+  .light.green.active { color: var(--green); }
+
+  .reset-btn {
+    margin-top: 32px; padding: 10px 20px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface);
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--text2); cursor: pointer; transition: all 0.2s;
+  }
+  .reset-btn:hover { background: var(--bg); color: var(--text); }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 4px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ============ QUIZ STYLES ============ */
+
+  .quiz-filter-label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 12px; }
+
+  .quiz-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+
+  .quiz-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    cursor: pointer; font-family: inherit; transition: all 0.18s;
+    user-select: none;
+  }
+  .quiz-chip.selected { background: var(--text); border-color: var(--text); color: white; }
+
+  .quiz-action-btn {
+    padding: 12px 28px; border-radius: 24px; border: none;
+    background: var(--text); color: white; font-family: inherit;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+  }
+  .quiz-action-btn:hover { opacity: 0.8; }
+
+  .quiz-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .quiz-progress-text, .quiz-score-live { font-size: 13px; color: var(--text2); font-weight: 500; }
+
+  .quiz-bar-wrap { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 24px; overflow: hidden; }
+  .quiz-bar-fill { height: 100%; background: var(--text); border-radius: 2px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+
+  .quiz-card {
+    background: var(--surface); border-radius: 16px;
+    border: 1px solid var(--border); padding: 24px; box-shadow: var(--shadow);
+  }
+
+  .quiz-unit-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 10px; }
+
+  .quiz-q-text { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 20px; line-height: 1.45; letter-spacing: -0.2px; }
+
+  .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+
+  .quiz-opt {
+    width: 100%; padding: 14px 18px; border-radius: 12px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text); cursor: pointer; text-align: left; transition: all 0.15s;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: #888; background: var(--bg); }
+  .quiz-opt.correct { background: var(--green-bg); border-color: var(--green); color: #1a7a2e; }
+  .quiz-opt.wrong { background: var(--red-bg); border-color: var(--red); color: #b33a34; }
+  .quiz-opt.dimmed { opacity: 0.35; }
+
+  .quiz-next-btn {
+    margin-top: 20px; width: 100%; padding: 14px; border-radius: 12px;
+    border: none; background: var(--text); color: white; font-family: inherit;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+  }
+  .quiz-next-btn:hover { opacity: 0.8; }
+
+  .quiz-result-card {
+    background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
+    padding: 40px 24px; text-align: center; box-shadow: var(--shadow); margin-bottom: 24px;
+  }
+  .quiz-big-score { font-size: 64px; font-weight: 700; letter-spacing: -3px; color: var(--text); line-height: 1; margin-bottom: 8px; }
+  .quiz-result-pct { font-size: 22px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+  .quiz-result-msg { font-size: 15px; color: var(--text2); line-height: 1.4; }
+  .quiz-result-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">GCSE Maths</span>
+  <button class="nav-btn active" onclick="showPage('noncalc')">Non-Calculator</button>
+  <button class="nav-btn" onclick="showPage('calc')">Calculator</button>
+  <button class="nav-btn" onclick="showPage('quiz')">Quiz</button>
+</nav>
+
+<div id="page-noncalc" class="page active"></div>
+<div id="page-calc" class="page"></div>
+<div id="page-quiz" class="page"></div>
+
+<script>
+// ==================== TRACKER DATA ====================
+
+const nonCalcTopics = [
+  { section: "Grade 7–9 — Hardest", topics: [
+    { name: "Proof", grade: "G8-9" },
+    { name: "Completing the square", grade: "G8" },
+    { name: "Quadratic inequalities", grade: "G8" },
+    { name: "Surds", grade: "G7-8" },
+    { name: "The nth term of a quadratic sequence", grade: "G7-8" },
+    { name: "Probability equation questions", grade: "G7-8" },
+    { name: "Expanding triple brackets", grade: "G7" },
+    { name: "Conditional probability", grade: "G7" },
+    { name: "Fractional and negative indices", grade: "G7" },
+    { name: "Recurring decimals to fractions", grade: "G7" },
+  ]},
+  { section: "Grade 5–6 — Medium Hard", topics: [
+    { name: "Solving quadratics", grade: "G6" },
+    { name: "Expanding and factorising quadratics", grade: "G6" },
+    { name: "Changing the subject of a formula", grade: "G6" },
+    { name: "Forming and solving equations", grade: "G5-6" },
+    { name: "Sequences (Nth term)", grade: "G5-6" },
+    { name: "Indices", grade: "G5-6" },
+    { name: "Venn diagrams", grade: "G5-6" },
+    { name: "Probability trees", grade: "G5" },
+    { name: "Exact trig values", grade: "G5" },
+    { name: "Standard form", grade: "G5" },
+  ]},
+  { section: "Grade 4–5 — Medium", topics: [
+    { name: "Expanding and factorising", grade: "G4-5" },
+    { name: "Solving equations", grade: "G4-5" },
+    { name: "Inequalities", grade: "G4-5" },
+    { name: "Prime factors, HCF and LCM", grade: "G4-5" },
+    { name: "Angles in parallel lines", grade: "G4" },
+    { name: "Angles in polygons", grade: "G4" },
+    { name: "Bearings", grade: "G4" },
+    { name: "Scatter graphs", grade: "G4" },
+  ]},
+  { section: "Grade 1–3 — Easiest", topics: [
+    { name: "Fractions", grade: "G3-4" },
+    { name: "Estimating", grade: "G3" },
+    { name: "Writing and simplifying ratio", grade: "G3" },
+    { name: "Ratio", grade: "G3" },
+    { name: "Proportion", grade: "G3" },
+    { name: "Percentages", grade: "G2-3" },
+    { name: "Substitution", grade: "G2-3" },
+    { name: "Probability", grade: "G2-3" },
+    { name: "Error intervals", grade: "G2" },
+  ]},
+];
+
+const calcTopics = [
+  { section: "Grade 7–9 — Hardest", topics: [
+    { name: "3D Pythagoras and trigonometry", grade: "G8-9" },
+    { name: "The sine rule", grade: "G7-8" },
+    { name: "The cosine rule", grade: "G7-8" },
+    { name: "Rearranging harder formulae", grade: "G7" },
+    { name: "Factorising harder quadratics", grade: "G7" },
+    { name: "Quadratic formula", grade: "G7" },
+  ]},
+  { section: "Grade 5–6 — Medium Hard", topics: [
+    { name: "Bounds", grade: "G6" },
+    { name: "Direct and inverse proportion", grade: "G5-6" },
+    { name: "Finding the area of any triangle", grade: "G5-6" },
+    { name: "Repeated percentage change", grade: "G5" },
+    { name: "SOHCAHTOA", grade: "G5" },
+    { name: "Averages from frequency tables", grade: "G5" },
+  ]},
+  { section: "Grade 4–5 — Medium", topics: [
+    { name: "Compound interest and depreciation", grade: "G4-5" },
+    { name: "Pythagoras", grade: "G4-5" },
+    { name: "Reverse percentages", grade: "G4-5" },
+    { name: "Writing a ratio as a fraction or linear function", grade: "G4-5" },
+    { name: "The product rule for counting", grade: "G4" },
+    { name: "Exchange rates", grade: "G4" },
+    { name: "Best buys", grade: "G4" },
+  ]},
+  { section: "Grade 1–3 — Easiest", topics: [
+    { name: "Percentage change", grade: "G3-4" },
+    { name: "Proportion", grade: "G3" },
+    { name: "Estimating", grade: "G3" },
+  ]},
+];
+
+// ==================== QUIZ DATA ====================
+
+const QUIZ_UNITS = [
+  'Unit 1: Data',
+  'Unit 2: Algebra',
+  'Unit 3: Number',
+  'Exact Trig Values',
+  'Unit 4: Angles & Pythagoras'
+];
+
+const quizData = [
+  // ── Unit 1: Data ──
+  { unit: 'Unit 1: Data',
+    q: 'Where do you plot the points of a Frequency Polygon?',
+    options: ['Lower bound of each class', 'Midpoint of each class', 'Upper bound of each class', 'Mean of each class'],
+    answer: 1 },
+  { unit: 'Unit 1: Data',
+    q: 'What is the key word associated with Scatter graphs?',
+    options: ['Proportion', 'Distribution', 'Correlation', 'Frequency'],
+    answer: 2 },
+
+  // ── Unit 2: Algebra ──
+  { unit: 'Unit 2: Algebra',
+    q: "What does 'Factorise' mean?",
+    options: ['Multiply out the brackets', 'Work out the value of x', 'Put into brackets', 'Simplify the expression'],
+    answer: 2 },
+  { unit: 'Unit 2: Algebra',
+    q: "What does 'Expand' mean?",
+    options: ['Put into brackets', 'Multiply out the brackets', 'Work out the value of x', 'Substitute values'],
+    answer: 1 },
+  { unit: 'Unit 2: Algebra',
+    q: "What does 'Solve' mean?",
+    options: ['Put into brackets', 'Multiply out the brackets', 'Simplify the expression', 'Work out the value of x'],
+    answer: 3 },
+  { unit: 'Unit 2: Algebra',
+    q: "What does 'Factorise and solve' mean?",
+    options: ['Multiply out and simplify', 'Put into brackets and state the value of x', 'Work out x without brackets', 'Expand then substitute'],
+    answer: 1 },
+  { unit: 'Unit 2: Algebra',
+    q: 'A solid circle on a number line (inequalities) means the value is…',
+    options: ['Not included (strict < or >)', 'Included (≤ or ≥)', 'Equal to zero', 'Greater than only'],
+    answer: 1 },
+  { unit: 'Unit 2: Algebra',
+    q: 'A hollow circle on a number line (inequalities) means the value is…',
+    options: ['Included (≤ or ≥)', 'Equal to zero', 'Not included (strict < or >)', 'Greater than only'],
+    answer: 2 },
+  { unit: 'Unit 2: Algebra',
+    q: 'What is an Integer?',
+    options: ['A decimal number', 'A fraction', 'A whole number', 'A negative number only'],
+    answer: 2 },
+  { unit: 'Unit 2: Algebra',
+    q: 'When writing a proof, how do you represent an even number?',
+    options: ['2n + 1', 'n²', '2n', 'n + 1'],
+    answer: 2 },
+  { unit: 'Unit 2: Algebra',
+    q: 'When writing a proof, how do you represent an odd number?',
+    options: ['2n', '2n + 1', 'n²', 'n + 2'],
+    answer: 1 },
+  { unit: 'Unit 2: Algebra',
+    q: 'When writing a proof, how do you represent 3 consecutive numbers?',
+    options: ['n, n+2, n+4', '1, 2, 3', 'n, 2n, 3n', 'n, n+1, n+2'],
+    answer: 3 },
+
+  // ── Unit 3: Number ──
+  { unit: 'Unit 3: Number',
+    q: "What does 'Evaluate' mean?",
+    options: ['Round the answer', 'Work out the answer', 'Estimate the answer', 'Substitute values'],
+    answer: 1 },
+  { unit: 'Unit 3: Number',
+    q: "What does 'Estimate' mean?",
+    options: ['Work out the exact answer', 'Find bounds and take the midpoint', 'Round BEFORE you do any calculations', 'Truncate your answer'],
+    answer: 2 },
+  { unit: 'Unit 3: Number',
+    q: 'A power of ½ means?',
+    options: ['Square the number', 'Divide by 2', 'Square root', 'Cube root'],
+    answer: 2 },
+  { unit: 'Unit 3: Number',
+    q: 'A power of ⅓ means?',
+    options: ['Divide by 3', 'Square root then cube', 'Square then cube root', 'Cube root'],
+    answer: 3 },
+  { unit: 'Unit 3: Number',
+    q: 'A power of ⅔ means?',
+    options: ['Square root then cube', 'Divide by 2 then by 3', 'Cube root then square', 'Square then cube root'],
+    answer: 2 },
+  { unit: 'Unit 3: Number',
+    q: 'Anything to the power of 0 equals?',
+    options: ['0', 'Itself', 'Undefined', '1'],
+    answer: 3 },
+  { unit: 'Unit 3: Number',
+    q: 'A negative power means?',
+    options: ['The number becomes negative', 'Reciprocal — flip it (1 ÷ number)', 'Square root', 'Multiply by −1'],
+    answer: 1 },
+  { unit: 'Unit 3: Number',
+    q: "What does 'Truncate' mean?",
+    options: ['Round to the nearest integer', 'Always round up', 'Chop off the digits — do NOT round', 'Round to 3 significant figures'],
+    answer: 2 },
+  { unit: 'Unit 3: Number',
+    q: "When a question says 'use bounds', you should…",
+    options: ['Answer the question first, then find bounds', 'Find the bounds, then use them to answer the question', 'Use only the upper bound', 'Round to 3 s.f. then find bounds'],
+    answer: 1 },
+
+  // ── Exact Trig Values ──
+  { unit: 'Exact Trig Values',
+    q: 'What is sin(0°)?',
+    options: ['1', '1/2', '√3/2', '0'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is sin(30°)?',
+    options: ['0', '√3/2', '√2/2', '1/2'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is sin(45°)?',
+    options: ['1/2', '√2/2', '√3/2', '1'],
+    answer: 1 },
+  { unit: 'Exact Trig Values',
+    q: 'What is sin(60°)?',
+    options: ['1/2', '√2/2', '1', '√3/2'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is sin(90°)?',
+    options: ['0', '1/2', '√3/2', '1'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is cos(0°)?',
+    options: ['0', '√3/2', '1/2', '1'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is cos(30°)?',
+    options: ['1/2', '√3/2', '√2/2', '1'],
+    answer: 1 },
+  { unit: 'Exact Trig Values',
+    q: 'What is cos(45°)?',
+    options: ['√3/2', '1/2', '√2/2', '1'],
+    answer: 2 },
+  { unit: 'Exact Trig Values',
+    q: 'What is cos(60°)?',
+    options: ['√3/2', '1/2', '√2/2', '0'],
+    answer: 1 },
+  { unit: 'Exact Trig Values',
+    q: 'What is cos(90°)?',
+    options: ['1', '√3/2', '1/2', '0'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is tan(0°)?',
+    options: ['1', 'Undefined', '√3', '0'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is tan(30°)?',
+    options: ['√3', '1', '√3/3  (= 1/√3)', '1/2'],
+    answer: 2 },
+  { unit: 'Exact Trig Values',
+    q: 'What is tan(45°)?',
+    options: ['√3/3', '√3', '1/2', '1'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is tan(60°)?',
+    options: ['1', '1/2', '√3/3', '√3'],
+    answer: 3 },
+  { unit: 'Exact Trig Values',
+    q: 'What is tan(90°)?',
+    options: ['0', '1', 'Undefined', '√3'],
+    answer: 2 },
+
+  // ── Unit 4: Angles & Pythagoras ──
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'What is the formula for the sum of interior angles of any polygon?',
+    options: ['n × 180°', '360°', '(n + 2) × 180°', '(n − 2) × 180°'],
+    answer: 3 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'What do the exterior angles of any polygon always add up to?',
+    options: ['180°', '270°', '360°', 'Depends on the polygon'],
+    answer: 2 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'Interior angle + exterior angle of a polygon =',
+    options: ['360°', '90°', '270°', '180°'],
+    answer: 3 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'What do you know about angles in a parallelogram?',
+    options: ['All four angles are 90°', 'Adjacent angles are equal', 'Opposite angles are equal', 'They add to 180° in pairs only'],
+    answer: 2 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'Angles on a straight line add up to?',
+    options: ['90°', '270°', '360°', '180°'],
+    answer: 3 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'Angles in a triangle add up to?',
+    options: ['90°', '180°', '270°', '360°'],
+    answer: 1 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'Bearings are measured…',
+    options: ['Anticlockwise from East, 2-digit', 'Clockwise from South, 3-digit', 'Anticlockwise from North, 3-digit', 'Clockwise from North, 3-digit'],
+    answer: 3 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: "Pythagoras' theorem when finding the longest side is?",
+    options: ['c² − b² = a²', 'a + b = c', 'a² − b² = c²', 'a² + b² = c²'],
+    answer: 3 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: "Pythagoras' theorem when you know the longest side and find a shorter side?",
+    options: ['a² + b² = c²', 'a + b = c', 'c² − b² = a²', 'c² + b² = a²'],
+    answer: 2 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'F-angles (same position at each parallel line crossing) are called?',
+    options: ['Alternate angles — equal', 'Co-interior angles — add to 180°', 'Corresponding angles — equal', 'Vertically opposite angles — equal'],
+    answer: 2 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'Z-angles (between parallel lines on opposite sides) are called?',
+    options: ['Corresponding angles — equal', 'Co-interior angles — add to 180°', 'Vertically opposite — equal', 'Alternate angles — equal'],
+    answer: 3 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'C-angles (same side of the transversal between parallel lines) are called?',
+    options: ['Corresponding angles — equal', 'Alternate angles — equal', 'Co-interior angles — add to 180°', 'Vertically opposite — equal'],
+    answer: 2 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'Two straight lines cross. The angles directly opposite each other are?',
+    options: ['Supplementary (add to 180°)', 'Corresponding angles — equal', 'Co-interior — add to 180°', 'Vertically opposite — equal'],
+    answer: 3 },
+  { unit: 'Unit 4: Angles & Pythagoras',
+    q: 'The two equal angles at the base of an isosceles triangle are called?',
+    options: ['Vertically opposite angles', 'Corresponding angles', 'Base angles', 'Alternate angles'],
+    answer: 2 },
+];
+
+// ==================== TRACKER LOGIC ====================
+
+const STATE_KEY_NC = 'gcse_nc_states';
+const STATE_KEY_C  = 'gcse_c_states';
+
+function loadStates(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
+}
+
+function saveStates(key, states) {
+  localStorage.setItem(key, JSON.stringify(states));
+}
+
+function buildPage(pageId, sections, stateKey) {
+  const container = document.getElementById('page-' + pageId);
+  const states = loadStates(stateKey);
+  const isNC = stateKey === STATE_KEY_NC;
+  const title = isNC ? 'Non-Calculator' : 'Calculator';
+  const subtitle = isNC ? 'Topics typically tested without a calculator' : 'Topics typically tested with a calculator';
+
+  container.innerHTML = `
+    <div class="page-header"><h1>${title}</h1><p>${subtitle}</p></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#ff5f57"></div> Don't know it</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#febc2e"></div> Getting there</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#28c840"></div> Know it</div>
+    </div>
+    <div class="progress-row" id="progress-${pageId}"></div>
+    <div id="topics-${pageId}"></div>
+    <button class="reset-btn" onclick="resetPage('${pageId}','${stateKey}')">Reset all</button>
+  `;
+
+  const topicsContainer = document.getElementById('topics-' + pageId);
+  let topicIndex = 0;
+
+  sections.forEach(section => {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = section.section;
+    topicsContainer.appendChild(label);
+
+    section.topics.forEach(topic => {
+      const id = pageId + '_' + topicIndex;
+      const state = states[id] || null;
+      const card = document.createElement('div');
+      card.className = 'topic-card';
+      card.innerHTML = `
+        <span class="topic-name">${topic.name}</span>
+        <span class="grade-badge">${topic.grade}</span>
+        <div class="lights">
+          <button class="light red ${state==='red'?'active':''}" data-id="${id}" title="Don't know it" onclick="setLight('${pageId}','${stateKey}','${id}','red',this)"></button>
+          <button class="light amber ${state==='amber'?'active':''}" data-id="${id}" title="Getting there" onclick="setLight('${pageId}','${stateKey}','${id}','amber',this)"></button>
+          <button class="light green ${state==='green'?'active':''}" data-id="${id}" title="Know it" onclick="setLight('${pageId}','${stateKey}','${id}','green',this)"></button>
+        </div>`;
+      topicsContainer.appendChild(card);
+      topicIndex++;
+    });
+  });
+
+  updateProgress(pageId, stateKey);
+}
+
+function setLight(pageId, stateKey, id, color, btn) {
+  const states = loadStates(stateKey);
+  const wasActive = states[id] === color;
+  if (wasActive) { delete states[id]; } else { states[id] = color; }
+  saveStates(stateKey, states);
+  const card = btn.closest('.topic-card');
+  card.querySelectorAll('.light').forEach(l => l.classList.remove('active'));
+  if (!wasActive) btn.classList.add('active');
+  updateProgress(pageId, stateKey);
+}
+
+function updateProgress(pageId, stateKey) {
+  const states = loadStates(stateKey);
+  let red = 0, amber = 0, green = 0;
+  Object.values(states).forEach(v => {
+    if (v === 'red') red++;
+    else if (v === 'amber') amber++;
+    else if (v === 'green') green++;
+  });
+  document.getElementById('progress-' + pageId).innerHTML = `
+    <div class="progress-pill pill-red"><div class="dot"></div>${red} don't know</div>
+    <div class="progress-pill pill-amber"><div class="dot"></div>${amber} getting there</div>
+    <div class="progress-pill pill-green"><div class="dot"></div>${green} know it</div>`;
+}
+
+function resetPage(pageId, stateKey) {
+  localStorage.removeItem(stateKey);
+  buildPage(pageId, pageId === 'noncalc' ? nonCalcTopics : calcTopics, stateKey);
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ==================== QUIZ LOGIC ====================
+
+let selectedUnits = new Set(QUIZ_UNITS);
+let quizState = { questions: [], current: 0, score: 0, answered: false };
+
+function initQuizPage() {
+  const container = document.getElementById('page-quiz');
+
+  const chipsHTML = QUIZ_UNITS.map(u => `
+    <button class="quiz-chip selected" onclick="toggleUnit('${u}', this)">${u}</button>
+  `).join('');
+
+  container.innerHTML = `
+    <!-- START SCREEN -->
+    <div id="quiz-start">
+      <div class="page-header">
+        <h1>Quiz Mode</h1>
+        <p>Test yourself on key definitions and facts from your notes</p>
+      </div>
+      <p class="quiz-filter-label">Topics to include:</p>
+      <div class="quiz-chips">${chipsHTML}</div>
+      <button class="quiz-action-btn" onclick="startQuiz()">Start Quiz →</button>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div id="quiz-question" style="display:none">
+      <div class="quiz-top-bar">
+        <div class="quiz-progress-text">Question <span id="q-num">1</span> of <span id="q-total">10</span></div>
+        <div class="quiz-score-live">Score: <span id="q-score">0</span></div>
+      </div>
+      <div class="quiz-bar-wrap"><div class="quiz-bar-fill" id="q-bar"></div></div>
+      <div class="quiz-card">
+        <div class="quiz-unit-tag" id="q-unit"></div>
+        <div class="quiz-q-text" id="q-text"></div>
+        <div class="quiz-options" id="q-options"></div>
+        <button class="quiz-next-btn" id="q-next" onclick="nextQuestion()" style="display:none">Next question →</button>
+      </div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div id="quiz-results" style="display:none">
+      <div class="page-header"><h1>Quiz complete!</h1><p>Here's how you did</p></div>
+      <div class="quiz-result-card">
+        <div class="quiz-big-score" id="q-big-score"></div>
+        <div class="quiz-result-pct" id="q-pct"></div>
+        <div class="quiz-result-msg" id="q-msg"></div>
+      </div>
+      <div class="quiz-result-btns">
+        <button class="quiz-action-btn" onclick="startQuiz()">Same topics again</button>
+        <button class="reset-btn" onclick="showQuizStart()">Change topics</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleUnit(unit, chip) {
+  if (selectedUnits.has(unit)) {
+    if (selectedUnits.size === 1) return;
+    selectedUnits.delete(unit);
+    chip.classList.remove('selected');
+  } else {
+    selectedUnits.add(unit);
+    chip.classList.add('selected');
+  }
+}
+
+function showQuizStart() {
+  document.getElementById('quiz-start').style.display = 'block';
+  document.getElementById('quiz-question').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'none';
+}
+
+function startQuiz() {
+  const filtered = quizData.filter(q => selectedUnits.has(q.unit));
+  if (!filtered.length) return;
+  quizState.questions = [...filtered].sort(() => Math.random() - 0.5);
+  quizState.current = 0;
+  quizState.score = 0;
+  quizState.answered = false;
+  document.getElementById('quiz-start').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-question').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizState.questions[quizState.current];
+  const total = quizState.questions.length;
+  const num = quizState.current + 1;
+
+  document.getElementById('q-num').textContent = num;
+  document.getElementById('q-total').textContent = total;
+  document.getElementById('q-score').textContent = quizState.score;
+  document.getElementById('q-bar').style.width = ((num - 1) / total * 100) + '%';
+  document.getElementById('q-unit').textContent = q.unit;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-next').style.display = 'none';
+  quizState.answered = false;
+
+  const optionsEl = document.getElementById('q-options');
+  optionsEl.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i, q);
+    optionsEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(index, q) {
+  if (quizState.answered) return;
+  quizState.answered = true;
+
+  const correct = index === q.answer;
+  if (correct) quizState.score++;
+  document.getElementById('q-score').textContent = quizState.score;
+
+  document.querySelectorAll('.quiz-opt').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('correct');
+    else if (i === index) btn.classList.add('wrong');
+    else btn.classList.add('dimmed');
+  });
+
+  const nextBtn = document.getElementById('q-next');
+  nextBtn.style.display = 'block';
+  nextBtn.textContent = quizState.current === quizState.questions.length - 1
+    ? 'See results →'
+    : 'Next question →';
+}
+
+function nextQuestion() {
+  if (quizState.current === quizState.questions.length - 1) {
+    showResults();
+  } else {
+    quizState.current++;
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-question').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'block';
+
+  const score = quizState.score;
+  const total = quizState.questions.length;
+  const pct = Math.round(score / total * 100);
+
+  document.getElementById('q-big-score').textContent = score + ' / ' + total;
+  document.getElementById('q-pct').textContent = pct + '%';
+  document.getElementById('q-msg').textContent =
+    pct >= 90 ? 'Excellent — you really know your stuff!' :
+    pct >= 70 ? 'Great work! Keep revising the ones you missed.' :
+    pct >= 50 ? 'Good effort. Focus on the topics you struggled with.' :
+    "Keep practising — you'll get there!";
+
+  document.getElementById('q-bar').style.width = '100%';
+}
+
+// ==================== INIT ====================
+
+buildPage('noncalc', nonCalcTopics, STATE_KEY_NC);
+buildPage('calc', calcTopics, STATE_KEY_C);
+initQuizPage();
+</script>
+</body>
+</html>
